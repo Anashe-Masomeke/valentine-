@@ -1,8 +1,8 @@
 import streamlit as st
 import random
 import time
+import os
 from datetime import datetime
-
 
 st.set_page_config(page_title="Valentine Emergency Center BY POPE MASO", page_icon="💘")
 
@@ -20,9 +20,12 @@ h1, h2, h3, h4 {
 """
 st.markdown(page_bg, unsafe_allow_html=True)
 
-# ---- Session Counter ----
-if "single_count" not in st.session_state:
-    st.session_state.single_count = 0
+# ---- File Setup ----
+FILE_NAME = "singles.txt"
+
+if not os.path.exists(FILE_NAME):
+    with open(FILE_NAME, "w") as f:
+        pass
 
 # ---- Title ----
 st.title("💔 Valentine Emergency Support Center BY POPE MASO")
@@ -48,8 +51,14 @@ if st.button("Check My Valentine Status 💘"):
         st.warning("Enter your name first so we roast you properly 😂")
     else:
 
-        # Increase single counter
-        st.session_state.single_count += 1
+        # Read existing names
+        with open(FILE_NAME, "r") as f:
+            existing_names = [n.strip().lower() for n in f.readlines()]
+
+        # Save only if not duplicate
+        if name.lower() not in existing_names:
+            with open(FILE_NAME, "a") as f:
+                f.write(name + "\n")
 
         # Fake loading
         with st.spinner("Scanning the Valentine Database... 🎁"):
@@ -67,6 +76,8 @@ if st.button("Check My Valentine Status 💘"):
 
         st.error(message)
         st.success("System result: ZERO gifts detected 💀")
+
+        # 🚨 Flash + Shake Alert
         st.markdown("""
         <style>
         @keyframes flash {
@@ -103,24 +114,20 @@ if st.button("Check My Valentine Status 💘"):
         </div>
         """, unsafe_allow_html=True)
 
-        # Show total singles count
-        st.markdown("### 📊 Today's Single Statistics")
-        st.info(f"💔 {st.session_state.single_count} brave soldiers have checked and found nothing 😂")
-
         # Confetti
         st.balloons()
 
         # ---- AUTO PLAY ONLINE SOUND ----
         audio_url = "https://www.myinstants.com/media/sounds/emotional-damage-meme.mp3"
 
-
         audio_html = f"""
         <audio autoplay>
             <source src="{audio_url}" type="audio/mp3">
         </audio>
         """
-
         st.markdown(audio_html, unsafe_allow_html=True)
+
+        # ---- Countdown ----
         today = datetime.today()
         next_valentine = datetime(today.year, 2, 14)
 
@@ -134,3 +141,16 @@ if st.button("Check My Valentine Status 💘"):
 
         st.markdown("### Stay strong soldier 💪😂")
         st.markdown("## — BY POPE ANASHE MASO")
+
+
+# ---- DISPLAY ALL STORED NAMES ----
+st.markdown("## 📜 Official Single Registry")
+
+with open(FILE_NAME, "r") as f:
+    names = f.readlines()
+
+if names:
+    for n in names:
+        st.write("💔", n.strip())
+else:
+    st.write("No singles recorded yet... suspicious 👀")
